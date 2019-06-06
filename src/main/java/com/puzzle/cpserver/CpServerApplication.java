@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import com.puzzle.dao.config.DaoConfiguration;
 
 @SpringBootApplication
-@Import(DaoConfiguration.class)
+@Import({DaoConfiguration.class, SwaggerConfig.class})
 @ComponentScan("com.puzzle.controller")
 public class CpServerApplication {
 

@@ -13,6 +13,7 @@ import com.puzzle.dao.entity.User;
 import com.puzzle.dao.repository.UserRepository;
 import com.puzzle.resource.UserResource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author ibez
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@Slf4j
 public class UserController {
 
     @Nonnull
@@ -28,6 +30,7 @@ public class UserController {
 
     @GetMapping
     public List<UserResource> getUsers() {
+        log.info("getUsers()");
         return toResource(userRepository.findAll(), UserController::toResource);
     }
 
