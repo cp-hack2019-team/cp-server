@@ -43,6 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //@formatter:off
         http
             .httpBasic().disable()
+            .cors()
+            .and()
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
@@ -50,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/auth/signin").permitAll()
             .antMatchers("/api-docs/**").permitAll()
             .antMatchers("/medicines/**").permitAll()
-            .antMatchers("/**").permitAll()
+            //.antMatchers("/**").permitAll()
             //.antMatchers(HttpMethod.GET, "/users/**").permitAll()
             //.antMatchers(HttpMethod.POST, "/users/**").permitAll()
             .antMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
