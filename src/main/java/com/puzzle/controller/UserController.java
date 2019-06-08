@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 import com.puzzle.dao.entity.User;
@@ -32,6 +31,7 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/users")
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 @Slf4j
+@CrossOrigin
 public class UserController {
 
     @Nonnull
@@ -58,6 +58,30 @@ public class UserController {
         return toResourceList(userRepository.findAll(), UserController::toResource);
     }
 
+    @GetMapping("/{id}")
+    public UserResource getUser(@AuthenticationPrincipal UserDetails userDetails,
+                                @PathVariable UUID id)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        return toResource(user);
+    }
+
+    @GetMapping("/{id}/doctors")
+    public List<UserResource> getUserDoctors(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable UUID id)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        return toResourceList(new ArrayList<>(user.getDoctors()), UserController::toResource);
+    }
+
+    @GetMapping("/{id}/patients")
+    public List<UserResource> getUserPatients(@AuthenticationPrincipal UserDetails userDetails,
+                                              @PathVariable UUID id)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        return toResourceList(new ArrayList<>(user.getPatients()), UserController::toResource);
+    }
+
     @PostMapping
     public UserResource createUser(@RequestBody UserResource resource) {
         resource.setPassword(passwordEncoder.encode(resource.getPassword()));
@@ -66,7 +90,8 @@ public class UserController {
 
     @PostMapping("/assigndoctor")
     public ResponseEntity assignDoctor(@AuthenticationPrincipal UserDetails userDetails,
-                                       @RequestParam(name = "doctorId") @Nonnull UUID doctorId) {
+                                       @RequestParam(name = "doctorId") @Nonnull UUID doctorId)
+    {
         User patient = userRepository.findByLogin(userDetails.getUsername())
             .orElseThrow(() -> new IllegalArgumentException("no user with login " + userDetails.getUsername()));
         User doctor = userRepository.findByUuid(doctorId)
@@ -81,13 +106,23 @@ public class UserController {
         return ok().build();
     }
 
+    private User validateCurrentUser(@AuthenticationPrincipal UserDetails userDetails,
+                                     @PathVariable UUID id) {
+        User user = userRepository.findByUuid(id)
+            .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
+        if (!user.getLogin().equals(userDetails.getUsername())) {
+            throw new IllegalArgumentException(
+                "User " + userDetails.getUsername() + " is not allowed to see user " + user.getLogin());
+        }
+        return user;
+    }
 
     private static UserResource toResource(User user) {
         return new UserResource(user.getUuid(), user.getLogin(), "",
             user.getFirstName(), user.getLastName(),
-            user.getBirthDate().toLocalDate(), user.getEmail(), user.getPhoneNumber(),
-            user.getPatients().stream().map(User::getUuid).collect(Collectors.toSet()),
-            user.getDoctors().stream().map(User::getUuid).collect(Collectors.toSet()));
+            user.getBirthDate().toLocalDate(), user.getEmail(), user.getPhoneNumber());
+        //user.getPatients().stream().map(User::getUuid).collect(Collectors.toSet()),
+        //user.getDoctors().stream().map(User::getUuid).collect(Collectors.toSet()));
     }
 
     private static User fromResource(UserResource resource) {

@@ -33,6 +33,7 @@ import static com.puzzle.controller.ControllerUtils.toResourceList;
 @RequestMapping("/medicines")
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 @Slf4j
+@CrossOrigin
 public class MedicineController {
 
     private final MedicineRepository medicineRepository;

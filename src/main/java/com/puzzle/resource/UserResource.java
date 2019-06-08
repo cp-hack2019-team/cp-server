@@ -49,7 +49,7 @@ public class UserResource {
     @Length // TODO validate phone number
     private String phoneNumber;
 
-    private Set<UUID> patients;
-
-    private Set<UUID> doctors;
+//    private Set<UUID> patients;
+//
+//    private Set<UUID> doctors;
 }
