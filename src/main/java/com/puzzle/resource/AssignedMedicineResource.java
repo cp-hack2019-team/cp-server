@@ -21,6 +21,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonInclude(value = NON_NULL)
 public class AssignedMedicineResource {
 
+    private UUID id;
+
     private UUID medicineId;
 
     private MedicineSchedule schedule;

@@ -187,7 +187,7 @@ public class UserController {
     }
 
     private static AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
-        return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getSchedule(),
-            assignedMedicine.getDose());
+        return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
+            assignedMedicine.getSchedule(), assignedMedicine.getDose());
     }
 }
