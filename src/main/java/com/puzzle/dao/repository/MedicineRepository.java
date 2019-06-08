@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -18,7 +19,7 @@ import com.puzzle.dao.entity.Medicine;
  */
 public interface MedicineRepository extends JpaRepository<Medicine, Long>, JpaSpecificationExecutor<Medicine> {
 
-    Medicine findByUuid(UUID uuid);
+    Optional<Medicine> findByUuid(UUID uuid);
 
     @Query("select m from Medicine m where m.name like ?1%")
     Page<Medicine> findByNamePrefixAndSort(String prefix, Pageable pageable);

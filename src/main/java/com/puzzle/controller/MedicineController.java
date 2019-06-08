@@ -51,7 +51,8 @@ public class MedicineController {
 
     @GetMapping("/{id}")
     public MedicineResource getMedicine(@PathVariable @Nonnull UUID id) {
-        return toResource(medicineRepository.findByUuid(id));
+        return toResource(medicineRepository.findByUuid(id)
+            .orElseThrow(() -> new IllegalArgumentException("No medicine with id " + id)));
     }
 
     @PostMapping
@@ -61,10 +62,11 @@ public class MedicineController {
     }
 
     private static Medicine fromResource(MedicineResource resource) {
-        return new Medicine(resource.getName(), resource.getDescription());
+        return new Medicine(resource.getName(), resource.getDescription(), resource.getImageUrl());
     }
 
     private static MedicineResource toResource(Medicine medicine) {
-        return new MedicineResource(medicine.getUuid(), medicine.getName(), medicine.getDescription());
+        return new MedicineResource(medicine.getUuid(), medicine.getName(), medicine.getDescription(),
+            medicine.getImageUrl());
     }
 }

@@ -1,13 +1,10 @@
 package com.puzzle.resource;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
-
 import java.util.UUID;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.puzzle.dao.entity.MedicineSchedule;
 import lombok.*;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -22,16 +19,11 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @JsonInclude(value = NON_NULL)
-public class MedicineResource {
+public class AssignedMedicineResource {
 
-    @NotNull
-    private UUID id;
+    private UUID medicineId;
 
-    @NotEmpty
-    private String name;
+    private MedicineSchedule schedule;
 
-    @NotEmpty
-    private String description;
-
-    private String imageUrl;
+    private int dose;
 }

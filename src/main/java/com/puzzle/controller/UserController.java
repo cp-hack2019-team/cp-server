@@ -13,8 +13,13 @@ import java.time.LocalTime;
 import java.util.*;
 
 
+import com.puzzle.dao.entity.AssignedMedicine;
+import com.puzzle.dao.entity.Medicine;
 import com.puzzle.dao.entity.User;
+import com.puzzle.dao.repository.AssignedMedicineRepository;
+import com.puzzle.dao.repository.MedicineRepository;
 import com.puzzle.dao.repository.UserRepository;
+import com.puzzle.resource.AssignedMedicineResource;
 import com.puzzle.resource.UserResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +41,12 @@ public class UserController {
 
     @Nonnull
     private final UserRepository userRepository;
+
+    @Nonnull
+    private final MedicineRepository medicineRepository;
+
+    @Nonnull
+    private final AssignedMedicineRepository assignedMedicineRepository;
 
     @Nonnull
     private final PasswordEncoder passwordEncoder;
@@ -103,7 +114,48 @@ public class UserController {
         userRepository.save(patient);
         userRepository.save(doctor);
 
+        log.info("Assigned doctor {} to patient {}", doctor.getLogin(), patient.getLogin());
+
         return ok().build();
+    }
+
+    @PostMapping("/{id}/medicines")
+    public ResponseEntity assignMedicine(@AuthenticationPrincipal UserDetails userDetails,
+                                         @PathVariable UUID id,
+                                         @RequestBody AssignedMedicineResource resource) {
+        User user = userRepository.findByUuid(id)
+            .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
+        if (user.getLogin().equals(userDetails.getUsername())) {
+            log.info("Patient {} is assigning itself medicine {} ", user.getLogin(), resource);
+        } else if (user.getDoctors().stream().anyMatch(doctor -> doctor.getLogin().equals(userDetails.getUsername()))) {
+            log.info("Doctor {} is assigning to patient {} medicine {} ",
+                userDetails.getUsername(), user.getLogin(), resource);
+        } else {
+            throw new IllegalArgumentException(
+                "User " + userDetails.getUsername() + " is not allowed to assign medicines to user " + user.getLogin());
+        }
+
+        Medicine medicine = medicineRepository.findByUuid(resource.getMedicineId())
+            .orElseThrow(() -> new IllegalArgumentException("No medicine with id " + resource.getMedicineId()));
+
+        AssignedMedicine assignedMedicine = new AssignedMedicine();
+        assignedMedicine.setPatient(user);
+        assignedMedicine.setMedicine(medicine);
+        assignedMedicine.setDose(resource.getDose());
+        assignedMedicine.setSchedule(resource.getSchedule());
+
+        assignedMedicineRepository.save(assignedMedicine);
+
+        return ok().build();
+    }
+
+    @GetMapping("/{id}/medicines")
+    public List<AssignedMedicineResource> getAssignedMedicines(@AuthenticationPrincipal UserDetails userDetails,
+                                                               @PathVariable UUID id) {
+        User user = validateCurrentUser(userDetails, id);
+        List<AssignedMedicine> assignedMedicines = assignedMedicineRepository.findByPatient(user);
+
+        return toResourceList(assignedMedicines, UserController::toResource);
     }
 
     private User validateCurrentUser(@AuthenticationPrincipal UserDetails userDetails,
@@ -132,5 +184,10 @@ public class UserController {
             LocalDateTime.of(resource.getBirthDate(), LocalTime.of(0, 0)),
             resource.getEmail(), resource.getPhoneNumber(),
             Collections.emptySet(), Collections.emptySet()); // TODO
+    }
+
+    private static AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
+        return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getSchedule(),
+            assignedMedicine.getDose());
     }
 }

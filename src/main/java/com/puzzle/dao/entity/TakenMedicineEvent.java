@@ -2,7 +2,11 @@ package com.puzzle.dao.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+
+import java.time.ZonedDateTime;
 
 
 import lombok.AllArgsConstructor;
@@ -19,14 +23,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Medicine extends AbstractEntity {
+public class TakenMedicineEvent extends AbstractEntity {
 
-    @Column
-    private String name;
+    @ManyToOne
+    @JoinColumn
+    private AssignedMedicine assignedMedicine;
 
-    @Column
-    private String description;
-
-    @Column
-    private String imageUrl;
+    @Column(nullable = false, updatable = false)
+    private ZonedDateTime time;
 }
