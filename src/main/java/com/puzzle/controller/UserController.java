@@ -11,17 +11,16 @@ import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
 import com.puzzle.dao.entity.User;
 import com.puzzle.dao.repository.UserRepository;
 import com.puzzle.resource.UserResource;
-import javassist.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.puzzle.controller.ControllerUtils.toResourceList;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -56,7 +55,7 @@ public class UserController {
     @GetMapping
     public List<UserResource> getUsers() {
         log.info("getUsers()");
-        return toResource(userRepository.findAll(), UserController::toResource);
+        return toResourceList(userRepository.findAll(), UserController::toResource);
     }
 
     @PostMapping
@@ -97,11 +96,5 @@ public class UserController {
             LocalDateTime.of(resource.getBirthDate(), LocalTime.of(0, 0)),
             resource.getEmail(), resource.getPhoneNumber(),
             Collections.emptySet(), Collections.emptySet()); // TODO
-    }
-
-    private <T, R> List<R> toResource(List<T> entities, Function<T, R> mapper) {
-        return entities.stream()
-            .map(mapper)
-            .collect(toList());
     }
 }
