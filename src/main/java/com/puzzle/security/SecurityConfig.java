@@ -48,6 +48,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers("/auth/signin").permitAll()
+            .antMatchers("/swagger-ui.html").permitAll()
+            .antMatchers("/**").permitAll()
             .antMatchers(HttpMethod.GET, "/users/**").permitAll()
             .antMatchers(HttpMethod.POST, "/users/**").permitAll()
             .antMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")

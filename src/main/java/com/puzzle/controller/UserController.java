@@ -2,7 +2,6 @@ package com.puzzle.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,7 +68,7 @@ public class UserController {
 
 
     private static UserResource toResource(User user) {
-        return new UserResource(user.getUuid(), user.getLogin(), user.getPassword(),
+        return new UserResource(user.getUuid(), user.getLogin(), "",
             user.getFirstName(), user.getLastName(),
             user.getBirthDate().toLocalDate(), user.getEmail(), user.getPhoneNumber(),
             Collections.emptySet(), //TODO
