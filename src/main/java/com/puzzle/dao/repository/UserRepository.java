@@ -15,7 +15,7 @@ import com.puzzle.dao.entity.User;
  */
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-    User findByUuid(UUID uuid);
+    Optional<User> findByUuid(UUID uuid);
 
     Optional<User> findByLogin(String login);
 }

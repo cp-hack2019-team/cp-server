@@ -58,7 +58,7 @@ public class User extends AbstractEntity implements UserDetails {
         joinColumns = @JoinColumn(name = "doctor_id"),
         inverseJoinColumns = @JoinColumn(name = "patient_id")
     )
-    private List<User> patients;
+    private Set<User> patients;
 
     @ManyToMany
     @JoinTable(
@@ -66,7 +66,7 @@ public class User extends AbstractEntity implements UserDetails {
         joinColumns = @JoinColumn(name = "patient_id"),
         inverseJoinColumns = @JoinColumn(name = "doctor_id")
     )
-    private List<User> doctors;
+    private Set<User> doctors;
 
     public List<String> getRoles() {
         return Collections.singletonList("WRITE");

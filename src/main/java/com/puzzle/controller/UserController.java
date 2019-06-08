@@ -10,16 +10,15 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 import com.puzzle.dao.entity.User;
 import com.puzzle.dao.repository.UserRepository;
 import com.puzzle.resource.UserResource;
+import javassist.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,13 +65,30 @@ public class UserController {
         return toResource(userRepository.save(fromResource(resource)));
     }
 
+    @PostMapping("/assigndoctor")
+    public ResponseEntity assignDoctor(@AuthenticationPrincipal UserDetails userDetails,
+                                       @RequestParam(name = "doctorId") @Nonnull UUID doctorId) {
+        User patient = userRepository.findByLogin(userDetails.getUsername())
+            .orElseThrow(() -> new IllegalArgumentException("no user with login " + userDetails.getUsername()));
+        User doctor = userRepository.findByUuid(doctorId)
+            .orElseThrow(() -> new IllegalArgumentException("no doctor with uuid " + doctorId));
+
+        patient.getDoctors().add(doctor);
+        doctor.getPatients().add(patient);
+
+        userRepository.save(patient);
+        userRepository.save(doctor);
+
+        return ok().build();
+    }
+
 
     private static UserResource toResource(User user) {
         return new UserResource(user.getUuid(), user.getLogin(), "",
             user.getFirstName(), user.getLastName(),
             user.getBirthDate().toLocalDate(), user.getEmail(), user.getPhoneNumber(),
-            Collections.emptySet(), //TODO
-            Collections.emptySet()); //TODO
+            user.getPatients().stream().map(User::getUuid).collect(Collectors.toSet()),
+            user.getDoctors().stream().map(User::getUuid).collect(Collectors.toSet()));
     }
 
     private static User fromResource(UserResource resource) {
@@ -80,7 +96,7 @@ public class UserController {
             resource.getFirstName(), resource.getLastName(),
             LocalDateTime.of(resource.getBirthDate(), LocalTime.of(0, 0)),
             resource.getEmail(), resource.getPhoneNumber(),
-            Collections.emptyList(), Collections.emptyList()); // TODO
+            Collections.emptySet(), Collections.emptySet()); // TODO
     }
 
     private <T, R> List<R> toResource(List<T> entities, Function<T, R> mapper) {
