@@ -10,7 +10,7 @@ import com.puzzle.dao.config.DaoConfiguration;
 import com.puzzle.security.SecurityConfig;
 
 @SpringBootApplication
-@Import({DaoConfiguration.class, SecurityConfig.class, SwaggerConfig.class})
+@Import({DaoConfiguration.class, SecurityConfig.class, WebConfig.class})
 @ComponentScan({
     "com.puzzle.controller"
 })

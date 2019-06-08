@@ -22,7 +22,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 @Controller
-public class SwaggerConfig implements WebMvcConfigurer {
+public class WebConfig implements WebMvcConfigurer {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -32,13 +32,17 @@ public class SwaggerConfig implements WebMvcConfigurer {
             .build();
     }
 
+    @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/api-docs/**").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/api-docs/**")
+            .addResourceLocations("classpath:/META-INF/resources/");
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE").allowedOrigins("*")
+        registry.addMapping("/**")
+            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowedOrigins("*")
             .allowedHeaders("*");
     }
 
