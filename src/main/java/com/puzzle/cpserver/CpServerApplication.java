@@ -7,10 +7,13 @@ import org.springframework.context.annotation.Import;
 
 
 import com.puzzle.dao.config.DaoConfiguration;
+import com.puzzle.security.SecurityConfig;
 
 @SpringBootApplication
-@Import({DaoConfiguration.class, SwaggerConfig.class})
-@ComponentScan("com.puzzle.controller")
+@Import({DaoConfiguration.class, SecurityConfig.class, SwaggerConfig.class})
+@ComponentScan({
+    "com.puzzle.controller"
+})
 public class CpServerApplication {
 
     public static void main(String[] args) {

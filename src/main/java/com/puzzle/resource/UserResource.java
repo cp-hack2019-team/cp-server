@@ -1,5 +1,8 @@
 package com.puzzle.resource;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -26,11 +29,27 @@ public class UserResource {
     private UUID uuid;
 
     @Length(max = 255)
+    private String login;
+
+    @Length(max = 255)
+    private String password;
+
+    @Length(max = 255)
     private String firstName;
 
     @Length(max = 255)
     private String lastName;
 
+    @Length
+    private LocalDate birthDate;
+
     @Length(max = 255)
     private String email;
+
+    @Length // TODO validate phone number
+    private String phoneNumber;
+
+    private Set<UUID> patients;
+
+    private Set<UUID> doctors;
 }
