@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 
 import com.puzzle.dao.entity.AssignedMedicine;
@@ -16,4 +18,6 @@ import com.puzzle.dao.entity.User;
 public interface AssignedMedicineRepository extends JpaRepository<AssignedMedicine, Long>, JpaSpecificationExecutor<AssignedMedicine> {
 
     List<AssignedMedicine> findByPatient(User patient);
+
+    Optional<AssignedMedicine> findByUuid(UUID uuid);
 }

@@ -15,11 +15,13 @@ import java.util.*;
 
 import com.puzzle.dao.entity.AssignedMedicine;
 import com.puzzle.dao.entity.Medicine;
+import com.puzzle.dao.entity.TakenMedicineEvent;
 import com.puzzle.dao.entity.User;
 import com.puzzle.dao.repository.AssignedMedicineRepository;
 import com.puzzle.dao.repository.MedicineRepository;
 import com.puzzle.dao.repository.UserRepository;
 import com.puzzle.resource.AssignedMedicineResource;
+import com.puzzle.resource.TakenMedicineEventResource;
 import com.puzzle.resource.UserResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -122,7 +124,8 @@ public class UserController {
     @PostMapping("/{id}/medicines")
     public ResponseEntity assignMedicine(@AuthenticationPrincipal UserDetails userDetails,
                                          @PathVariable UUID id,
-                                         @RequestBody AssignedMedicineResource resource) {
+                                         @RequestBody AssignedMedicineResource resource)
+    {
         User user = userRepository.findByUuid(id)
             .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
         if (user.getLogin().equals(userDetails.getUsername())) {
@@ -151,11 +154,53 @@ public class UserController {
 
     @GetMapping("/{id}/medicines")
     public List<AssignedMedicineResource> getAssignedMedicines(@AuthenticationPrincipal UserDetails userDetails,
-                                                               @PathVariable UUID id) {
+                                                               @PathVariable UUID id)
+    {
         User user = validateCurrentUser(userDetails, id);
         List<AssignedMedicine> assignedMedicines = assignedMedicineRepository.findByPatient(user);
 
         return toResourceList(assignedMedicines, UserController::toResource);
+    }
+
+    @PostMapping("/{id}/medicines/{assignedMedicineId}/events")
+    public ResponseEntity saveAssignedMedicineEvent(@AuthenticationPrincipal UserDetails userDetails,
+                                                                    @PathVariable UUID id,
+                                                                    @PathVariable UUID assignedMedicineId,
+                                                                    @RequestBody TakenMedicineEventResource resource)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
+            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        if (!assignedMedicine.getPatient().equals(user)) {
+            throw new IllegalArgumentException("Assigned medicine " + assignedMedicineId
+                                               + " is not for user " + user.getLogin());
+        }
+
+        log.info("Saving event {} to assigned medicine {}", resource, assignedMedicine.getUuid());
+
+        TakenMedicineEvent event = new TakenMedicineEvent();
+        event.setAssignedMedicine(assignedMedicine);
+        event.setTime(resource.getTime());
+        assignedMedicine.getEvents().add(event);
+        assignedMedicineRepository.save(assignedMedicine);
+
+        return ok().build();
+    }
+
+    @GetMapping("/{id}/medicines/{assignedMedicineId}/events")
+    public List<TakenMedicineEventResource> getAssignedMedicineEvents(@AuthenticationPrincipal UserDetails userDetails,
+                                                                      @PathVariable UUID id,
+                                                                      @PathVariable UUID assignedMedicineId)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
+            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        if (!assignedMedicine.getPatient().equals(user)) {
+            throw new IllegalArgumentException("Assigned medicine " + assignedMedicineId
+                                               + " is not for user " + user.getLogin());
+        }
+
+        return toResourceList(assignedMedicine.getEvents(), UserController::toResource);
     }
 
     private User validateCurrentUser(@AuthenticationPrincipal UserDetails userDetails,
@@ -189,5 +234,9 @@ public class UserController {
     private static AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
         return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
             assignedMedicine.getSchedule(), assignedMedicine.getDose());
+    }
+
+    private static TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {
+        return new TakenMedicineEventResource(takenMedicineEvent.getUuid(), takenMedicineEvent.getTime());
     }
 }
