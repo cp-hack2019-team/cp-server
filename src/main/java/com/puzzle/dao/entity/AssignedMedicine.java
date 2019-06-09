@@ -52,5 +52,4 @@ public class AssignedMedicine extends AbstractEntity {
     @OneToMany(cascade = CascadeType.ALL)
     private List<TakenMedicineEvent> events;
 
-
 }

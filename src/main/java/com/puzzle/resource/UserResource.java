@@ -43,6 +43,12 @@ public class UserResource {
     @Length
     private LocalDate birthDate;
 
+    private Integer age;
+
+    private Integer weight;
+
+    private Integer height;
+
     @Length(max = 255)
     private String email;
 

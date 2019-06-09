@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 
+import com.sun.xml.internal.ws.developer.UsesJAXBContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +46,12 @@ public class User extends AbstractEntity implements UserDetails {
 
     @Column(nullable = false)
     private LocalDateTime birthDate;
+
+    @Column
+    private Integer weight;
+
+    @Column
+    private Integer height;
 
     @Column(nullable = false)
     private String email;

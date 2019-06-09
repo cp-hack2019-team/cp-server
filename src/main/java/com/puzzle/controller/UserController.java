@@ -12,14 +12,12 @@ import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
 import com.google.common.base.MoreObjects;
-import com.puzzle.dao.entity.AssignedMedicine;
-import com.puzzle.dao.entity.Medicine;
-import com.puzzle.dao.entity.TakenMedicineEvent;
-import com.puzzle.dao.entity.User;
+import com.puzzle.dao.entity.*;
 import com.puzzle.dao.repository.AssignedMedicineRepository;
 import com.puzzle.dao.repository.MedicineRepository;
 import com.puzzle.dao.repository.UserRepository;
@@ -152,6 +150,7 @@ public class UserController {
         assignedMedicine.setStock(resource.getStock());
         assignedMedicine.setCreatedTime(MoreObjects.firstNonNull(resource.getCreatedTime(), ZonedDateTime.now()));
         assignedMedicine.setDays(resource.getDays());
+        checkSchedule(assignedMedicine, resource);
 
         assignedMedicineRepository.save(assignedMedicine);
 
@@ -257,15 +256,21 @@ public class UserController {
     private static UserResource toResource(User user) {
         return new UserResource(user.getUuid(), user.getLogin(), "",
             user.getFirstName(), user.getLastName(),
-            user.getBirthDate().toLocalDate(), user.getEmail(), user.getPhoneNumber());
+            user.getBirthDate().toLocalDate(), calcAge(user.getBirthDate()),
+            user.getWeight(), user.getHeight(), user.getEmail(), user.getPhoneNumber());
         //user.getPatients().stream().map(User::getUuid).collect(Collectors.toSet()),
         //user.getDoctors().stream().map(User::getUuid).collect(Collectors.toSet()));
+    }
+
+    private static int calcAge(LocalDateTime birthDate) {
+        return (int) ChronoUnit.YEARS.between(birthDate, LocalDateTime.now());
     }
 
     private static User fromResource(UserResource resource) {
         return new User(resource.getLogin(), resource.getPassword(),
             resource.getFirstName(), resource.getLastName(),
             LocalDateTime.of(resource.getBirthDate(), LocalTime.of(0, 0)),
+            resource.getWeight(), resource.getHeight(),
             resource.getEmail(), resource.getPhoneNumber(),
             Collections.emptySet(), Collections.emptySet()); // TODO
     }
@@ -274,7 +279,26 @@ public class UserController {
         return new RecipeResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
             assignedMedicine.getMedicine().getName(), assignedMedicine.getCreatedTime(),
             assignedMedicine.getSchedule(), assignedMedicine.getDose(),
-            assignedMedicine.getDays(), assignedMedicine.getStock());
+            assignedMedicine.getDays(), assignedMedicine.getStock(),
+            1);
+    }
+
+    private void checkSchedule(AssignedMedicine assignedMedicine, RecipeResource resource) {
+        if (resource.getSchedule() == null // TODO: if front is not able to send schedule
+            || resource.getSchedule().getTimes() == null
+            || resource.getSchedule().getTimes().isEmpty()
+            || resource.getSchedule().getTimes().get(0) == null)
+        {
+            List<LocalTime> times = new ArrayList<>();
+            times.add(LocalTime.of(8, 0));
+            if (resource.getDays() > 1) {
+                times.add(LocalTime.of(20, 0));
+            }
+            if (resource.getDays() > 2) {
+                times.add(LocalTime.of(12, 0));
+            }
+            assignedMedicine.setSchedule(new MedicineSchedule(times));
+        }
     }
 
     private TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {

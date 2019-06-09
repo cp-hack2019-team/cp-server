@@ -1,5 +1,6 @@
 package com.puzzle.resource;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonInclude(value = NON_NULL)
 public class RecipeResource {
 
+    @Nullable
     private UUID id;
 
     private UUID medicineId;
@@ -37,4 +39,6 @@ public class RecipeResource {
     private int days;
 
     private int stock;
+
+    private int daysCovered;
 }
