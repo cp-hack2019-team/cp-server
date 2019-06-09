@@ -291,10 +291,10 @@ public class UserController {
         {
             List<LocalTime> times = new ArrayList<>();
             times.add(LocalTime.of(8, 0));
-            if (resource.getDays() > 1) {
+            if (resource.getDose() > 1) {
                 times.add(LocalTime.of(20, 0));
             }
-            if (resource.getDays() > 2) {
+            if (resource.getDose() > 2) {
                 times.add(LocalTime.of(12, 0));
             }
             assignedMedicine.setSchedule(new MedicineSchedule(times));
