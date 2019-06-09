@@ -2,6 +2,7 @@ package com.puzzle.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,7 +62,7 @@ public class UserController {
         model.put("username", userDetails.getUsername());
         model.put("roles", userDetails.getAuthorities()
             .stream()
-            .map(a -> a.getAuthority())
+            .map(GrantedAuthority::getAuthority)
             .collect(toList())
         );
         return ok(model);
@@ -150,6 +151,7 @@ public class UserController {
         assignedMedicine.setSchedule(resource.getSchedule());
         assignedMedicine.setStock(resource.getStock());
         assignedMedicine.setCreatedTime(MoreObjects.firstNonNull(resource.getCreatedTime(), ZonedDateTime.now()));
+        assignedMedicine.setDays(resource.getDays());
 
         assignedMedicineRepository.save(assignedMedicine);
 
@@ -271,7 +273,8 @@ public class UserController {
     private RecipeResource toResource(AssignedMedicine assignedMedicine) {
         return new RecipeResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
             assignedMedicine.getMedicine().getName(), assignedMedicine.getCreatedTime(),
-            assignedMedicine.getSchedule(), assignedMedicine.getDose(), assignedMedicine.getStock());
+            assignedMedicine.getSchedule(), assignedMedicine.getDose(),
+            assignedMedicine.getDays(), assignedMedicine.getStock());
     }
 
     private TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {

@@ -34,5 +34,7 @@ public class RecipeResource {
 
     private int dose;
 
+    private int days;
+
     private int stock;
 }
