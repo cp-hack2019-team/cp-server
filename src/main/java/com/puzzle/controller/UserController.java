@@ -305,12 +305,17 @@ public class UserController {
             || resource.getSchedule().getTimes().get(0) == null)
         {
             List<LocalTime> times = new ArrayList<>();
-            times.add(LocalTime.of(8, 0));
+            if (resource.getDose() == 1) {
+                times.add(LocalTime.of(17, 0));
+            }
             if (resource.getDose() > 1) {
+                times.add(LocalTime.of(8, 0));
                 times.add(LocalTime.of(20, 0));
             }
             if (resource.getDose() > 2) {
+                times.add(LocalTime.of(8, 0));
                 times.add(LocalTime.of(12, 0));
+                times.add(LocalTime.of(20, 0));
             }
             assignedMedicine.setSchedule(new MedicineSchedule(times));
         }
