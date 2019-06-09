@@ -1,5 +1,6 @@
 package com.puzzle.resource;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 
@@ -24,6 +25,10 @@ public class AssignedMedicineResource {
     private UUID id;
 
     private UUID medicineId;
+
+    private String medicineName;
+
+    private ZonedDateTime createdTime;
 
     private MedicineSchedule schedule;
 

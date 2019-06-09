@@ -34,6 +34,9 @@ public class AssignedMedicine extends AbstractEntity {
     private Medicine medicine;
 
     @Column
+    private ZonedDateTime createdTime;
+
+    @Column
     @Convert(converter = MedicineScheduleConverter.class)
     private MedicineSchedule schedule;
 

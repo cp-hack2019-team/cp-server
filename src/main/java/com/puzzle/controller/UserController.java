@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Nonnull;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
+import com.google.common.base.MoreObjects;
 import com.puzzle.dao.entity.AssignedMedicine;
 import com.puzzle.dao.entity.Medicine;
 import com.puzzle.dao.entity.TakenMedicineEvent;
@@ -147,6 +149,7 @@ public class UserController {
         assignedMedicine.setDose(resource.getDose());
         assignedMedicine.setSchedule(resource.getSchedule());
         assignedMedicine.setStock(resource.getStock());
+        assignedMedicine.setCreatedTime(MoreObjects.firstNonNull(resource.getCreatedTime(), ZonedDateTime.now()));
 
         assignedMedicineRepository.save(assignedMedicine);
 
@@ -160,7 +163,7 @@ public class UserController {
         User user = validateCurrentUser(userDetails, id);
         List<AssignedMedicine> assignedMedicines = assignedMedicineRepository.findByPatient(user);
 
-        return toResourceList(assignedMedicines, UserController::toResource);
+        return toResourceList(assignedMedicines, this::toResource);
     }
 
     @PostMapping("/{id}/medicines/{assignedMedicineId}/events")
@@ -217,7 +220,7 @@ public class UserController {
                                                + " is not for user " + user.getLogin());
         }
 
-        return toResourceList(assignedMedicine.getEvents(), UserController::toResource);
+        return toResourceList(assignedMedicine.getEvents(), this::toResource);
     }
 
     private User validateCurrentUser(@AuthenticationPrincipal UserDetails userDetails,
@@ -265,12 +268,13 @@ public class UserController {
             Collections.emptySet(), Collections.emptySet()); // TODO
     }
 
-    private static AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
+    private AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
         return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
+            assignedMedicine.getMedicine().getName(), assignedMedicine.getCreatedTime(),
             assignedMedicine.getSchedule(), assignedMedicine.getDose(), assignedMedicine.getStock());
     }
 
-    private static TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {
+    private TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {
         return new TakenMedicineEventResource(takenMedicineEvent.getUuid(), takenMedicineEvent.getTime());
     }
 }
