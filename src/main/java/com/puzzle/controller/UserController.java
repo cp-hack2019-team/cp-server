@@ -123,10 +123,10 @@ public class UserController {
         return ok().build();
     }
 
-    @PostMapping("/{id}/medicines")
-    public ResponseEntity assignMedicine(@AuthenticationPrincipal UserDetails userDetails,
-                                         @PathVariable UUID id,
-                                         @RequestBody AssignedMedicineResource resource)
+    @PostMapping("/{id}/recipe")
+    public ResponseEntity assignRecipe(@AuthenticationPrincipal UserDetails userDetails,
+                                       @PathVariable UUID id,
+                                       @RequestBody AssignedMedicineResource resource)
     {
         User user = userRepository.findByUuid(id)
             .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
@@ -156,7 +156,7 @@ public class UserController {
         return ok().build();
     }
 
-    @GetMapping("/{id}/medicines")
+    @GetMapping("/{id}/recipes")
     public List<AssignedMedicineResource> getAssignedMedicines(@AuthenticationPrincipal UserDetails userDetails,
                                                                @PathVariable UUID id)
     {
@@ -166,21 +166,21 @@ public class UserController {
         return toResourceList(assignedMedicines, this::toResource);
     }
 
-    @PostMapping("/{id}/medicines/{assignedMedicineId}/events")
+    @PostMapping("/{id}/recipes/{recipeId}/events")
     public ResponseEntity saveAssignedMedicineEvent(@AuthenticationPrincipal UserDetails userDetails,
                                                     @PathVariable UUID id,
-                                                    @PathVariable UUID assignedMedicineId,
+                                                    @PathVariable UUID recipeId,
                                                     @RequestBody TakenMedicineEventResource resource)
     {
         User user = validateCurrentUser(userDetails, id);
-        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
-            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(recipeId)
+            .orElseThrow(() -> new IllegalArgumentException("No recipe with id " + recipeId));
         if (!assignedMedicine.getPatient().equals(user)) {
-            throw new IllegalArgumentException("Assigned medicine " + assignedMedicineId
+            throw new IllegalArgumentException("Assigned recipe " + recipeId
                                                + " is not for user " + user.getLogin());
         }
 
-        log.info("Saving event {} to assigned medicine {}", resource, assignedMedicine.getUuid());
+        log.info("Saving event {} to recipe {}", resource, assignedMedicine.getUuid());
 
         TakenMedicineEvent event = new TakenMedicineEvent();
         event.setAssignedMedicine(assignedMedicine);
@@ -191,15 +191,15 @@ public class UserController {
         return ok().build();
     }
 
-    @PutMapping("/{id}/medicines/{assignedMedicineId}/stock")
+    @PutMapping("/{id}/recipes/{recipeId}/stock")
     public AssignedMedicineResource updateAssignedMedicineStock(@AuthenticationPrincipal UserDetails userDetails,
                                                                 @PathVariable UUID id,
-                                                                @PathVariable UUID assignedMedicineId,
+                                                                @PathVariable UUID recipeId,
                                                                 @RequestBody int stock)
     {
         User user = validateCurrentUserOrDoctor(userDetails, id);
-        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
-            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(recipeId)
+            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + recipeId));
         log.info("User {} is changing stock of assigned medicine {} for {} from {} to {}",
             userDetails.getUsername(), user.getLogin(), assignedMedicine.getUuid(), assignedMedicine.getStock(), stock);
         assignedMedicine.setStock(stock);
@@ -207,16 +207,16 @@ public class UserController {
     }
 
 
-    @GetMapping("/{id}/medicines/{assignedMedicineId}/events")
+    @GetMapping("/{id}/recipes/{recipeId}/events")
     public List<TakenMedicineEventResource> getAssignedMedicineEvents(@AuthenticationPrincipal UserDetails userDetails,
                                                                       @PathVariable UUID id,
-                                                                      @PathVariable UUID assignedMedicineId)
+                                                                      @PathVariable UUID recipeId)
     {
         User user = validateCurrentUser(userDetails, id);
-        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
-            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(recipeId)
+            .orElseThrow(() -> new IllegalArgumentException("No recipe with id " + recipeId));
         if (!assignedMedicine.getPatient().equals(user)) {
-            throw new IllegalArgumentException("Assigned medicine " + assignedMedicineId
+            throw new IllegalArgumentException("Recipe " + recipeId
                                                + " is not for user " + user.getLogin());
         }
 
