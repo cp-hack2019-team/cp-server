@@ -22,7 +22,7 @@ import com.puzzle.dao.entity.User;
 import com.puzzle.dao.repository.AssignedMedicineRepository;
 import com.puzzle.dao.repository.MedicineRepository;
 import com.puzzle.dao.repository.UserRepository;
-import com.puzzle.resource.AssignedMedicineResource;
+import com.puzzle.resource.RecipeResource;
 import com.puzzle.resource.TakenMedicineEventResource;
 import com.puzzle.resource.UserResource;
 import lombok.RequiredArgsConstructor;
@@ -126,7 +126,7 @@ public class UserController {
     @PostMapping("/{id}/recipe")
     public ResponseEntity assignRecipe(@AuthenticationPrincipal UserDetails userDetails,
                                        @PathVariable UUID id,
-                                       @RequestBody AssignedMedicineResource resource)
+                                       @RequestBody RecipeResource resource)
     {
         User user = userRepository.findByUuid(id)
             .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
@@ -157,8 +157,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recipes")
-    public List<AssignedMedicineResource> getAssignedMedicines(@AuthenticationPrincipal UserDetails userDetails,
-                                                               @PathVariable UUID id)
+    public List<RecipeResource> getAssignedMedicines(@AuthenticationPrincipal UserDetails userDetails,
+                                                     @PathVariable UUID id)
     {
         User user = validateCurrentUser(userDetails, id);
         List<AssignedMedicine> assignedMedicines = assignedMedicineRepository.findByPatient(user);
@@ -192,10 +192,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}/recipes/{recipeId}/stock")
-    public AssignedMedicineResource updateAssignedMedicineStock(@AuthenticationPrincipal UserDetails userDetails,
-                                                                @PathVariable UUID id,
-                                                                @PathVariable UUID recipeId,
-                                                                @RequestBody int stock)
+    public RecipeResource updateAssignedMedicineStock(@AuthenticationPrincipal UserDetails userDetails,
+                                                      @PathVariable UUID id,
+                                                      @PathVariable UUID recipeId,
+                                                      @RequestBody int stock)
     {
         User user = validateCurrentUserOrDoctor(userDetails, id);
         AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(recipeId)
@@ -268,8 +268,8 @@ public class UserController {
             Collections.emptySet(), Collections.emptySet()); // TODO
     }
 
-    private AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
-        return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
+    private RecipeResource toResource(AssignedMedicine assignedMedicine) {
+        return new RecipeResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
             assignedMedicine.getMedicine().getName(), assignedMedicine.getCreatedTime(),
             assignedMedicine.getSchedule(), assignedMedicine.getDose(), assignedMedicine.getStock());
     }

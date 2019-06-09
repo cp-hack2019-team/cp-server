@@ -20,7 +20,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 @JsonInclude(value = NON_NULL)
-public class AssignedMedicineResource {
+public class RecipeResource {
 
     private UUID id;
 
