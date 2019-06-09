@@ -40,6 +40,9 @@ public class AssignedMedicine extends AbstractEntity {
     @Column
     private int dose;
 
+    @Column
+    private int stock;
+
     @OneToMany(cascade = CascadeType.ALL)
     private List<TakenMedicineEvent> events;
 

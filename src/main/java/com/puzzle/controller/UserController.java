@@ -130,7 +130,7 @@ public class UserController {
             .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
         if (user.getLogin().equals(userDetails.getUsername())) {
             log.info("Patient {} is assigning itself medicine {} ", user.getLogin(), resource);
-        } else if (user.getDoctors().stream().anyMatch(doctor -> doctor.getLogin().equals(userDetails.getUsername()))) {
+        } else if (isDoctor(user, userDetails.getUsername())) {
             log.info("Doctor {} is assigning to patient {} medicine {} ",
                 userDetails.getUsername(), user.getLogin(), resource);
         } else {
@@ -146,6 +146,7 @@ public class UserController {
         assignedMedicine.setMedicine(medicine);
         assignedMedicine.setDose(resource.getDose());
         assignedMedicine.setSchedule(resource.getSchedule());
+        assignedMedicine.setStock(resource.getStock());
 
         assignedMedicineRepository.save(assignedMedicine);
 
@@ -164,9 +165,9 @@ public class UserController {
 
     @PostMapping("/{id}/medicines/{assignedMedicineId}/events")
     public ResponseEntity saveAssignedMedicineEvent(@AuthenticationPrincipal UserDetails userDetails,
-                                                                    @PathVariable UUID id,
-                                                                    @PathVariable UUID assignedMedicineId,
-                                                                    @RequestBody TakenMedicineEventResource resource)
+                                                    @PathVariable UUID id,
+                                                    @PathVariable UUID assignedMedicineId,
+                                                    @RequestBody TakenMedicineEventResource resource)
     {
         User user = validateCurrentUser(userDetails, id);
         AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
@@ -186,6 +187,22 @@ public class UserController {
 
         return ok().build();
     }
+
+    @PutMapping("/{id}/medicines/{assignedMedicineId}/stock")
+    public AssignedMedicineResource updateAssignedMedicineStock(@AuthenticationPrincipal UserDetails userDetails,
+                                                                @PathVariable UUID id,
+                                                                @PathVariable UUID assignedMedicineId,
+                                                                @RequestBody int stock)
+    {
+        User user = validateCurrentUserOrDoctor(userDetails, id);
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(assignedMedicineId)
+            .orElseThrow(() -> new IllegalArgumentException("No assigned medicine with id " + assignedMedicineId));
+        log.info("User {} is changing stock of assigned medicine {} for {} from {} to {}",
+            userDetails.getUsername(), user.getLogin(), assignedMedicine.getUuid(), assignedMedicine.getStock(), stock);
+        assignedMedicine.setStock(stock);
+        return toResource(assignedMedicineRepository.save(assignedMedicine));
+    }
+
 
     @GetMapping("/{id}/medicines/{assignedMedicineId}/events")
     public List<TakenMedicineEventResource> getAssignedMedicineEvents(@AuthenticationPrincipal UserDetails userDetails,
@@ -215,6 +232,23 @@ public class UserController {
         return user;
     }
 
+    private User validateCurrentUserOrDoctor(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable UUID id)
+    {
+        User user = userRepository.findByUuid(id)
+            .orElseThrow(() -> new IllegalArgumentException("no user with id " + id));
+        if (!user.getLogin().equals(userDetails.getUsername())
+            || !isDoctor(user, userDetails.getUsername()))
+        {
+            throw new IllegalArgumentException("Only user itself or doctor is allowed to do it");
+        }
+        return user;
+    }
+
+    private boolean isDoctor(User user, String candidateLogin) {
+        return user.getDoctors().stream().anyMatch(doctor -> doctor.getLogin().equals(candidateLogin));
+    }
+
     private static UserResource toResource(User user) {
         return new UserResource(user.getUuid(), user.getLogin(), "",
             user.getFirstName(), user.getLastName(),
@@ -233,7 +267,7 @@ public class UserController {
 
     private static AssignedMedicineResource toResource(AssignedMedicine assignedMedicine) {
         return new AssignedMedicineResource(assignedMedicine.getUuid(), assignedMedicine.getUuid(),
-            assignedMedicine.getSchedule(), assignedMedicine.getDose());
+            assignedMedicine.getSchedule(), assignedMedicine.getDose(), assignedMedicine.getStock());
     }
 
     private static TakenMedicineEventResource toResource(TakenMedicineEvent takenMedicineEvent) {

@@ -28,4 +28,6 @@ public class AssignedMedicineResource {
     private MedicineSchedule schedule;
 
     private int dose;
+
+    private int stock;
 }
