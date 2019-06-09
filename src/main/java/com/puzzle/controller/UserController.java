@@ -167,6 +167,21 @@ public class UserController {
         return toResourceList(assignedMedicines, this::toResource);
     }
 
+    @GetMapping("/{id}/recipes/{recipeId}")
+    public RecipeResource getRecipe(@AuthenticationPrincipal UserDetails userDetails,
+                                    @PathVariable UUID id,
+                                    @PathVariable UUID recipeId)
+    {
+        User user = validateCurrentUser(userDetails, id);
+        AssignedMedicine assignedMedicine = assignedMedicineRepository.findByUuid(recipeId)
+            .orElseThrow(() -> new IllegalArgumentException("No recipe with id " + recipeId));
+        if (!assignedMedicine.getPatient().equals(user)) {
+            throw new IllegalArgumentException("Assigned recipe " + recipeId
+                                               + " is not for user " + user.getLogin());
+        }
+        return toResource(assignedMedicine);
+    }
+
     @PostMapping("/{id}/recipes/{recipeId}/events")
     public ResponseEntity saveAssignedMedicineEvent(@AuthenticationPrincipal UserDetails userDetails,
                                                     @PathVariable UUID id,
